@@ -10,13 +10,14 @@ Use this guide to make a web app available inside a Krista agent. The example us
 | **Workspace invoker** | The installed instance of that extension in one workspace. It has its own route and **Setup** values. Installing the same catalog entry in another workspace creates a separate invoker. |
 | **Extension Base URL** | The complete routed HTTPS address shown on the live invoker’s **Details** tab. It includes the extension host and routing ID. Use it as the prefix for the extension’s HTTP routes. |
 | **App URL** | The HTTPS web entry point saved on the invoker. The browser opens this URL in the agent iframe. For the bundled app, append `/static/app/index.html` to **Extension Base URL**. |
+| **Deployment Environment** | The Hello invoker’s Setup dropdown. It selects the approved Krista client, extension host and IAM endpoint for the workspace. |
 | **Agent assignment** | The configuration saved in Studio for the agent and its client topic. Studio discovers the **Hosting URL** from the selected invoker and saves a copy with the assignment. |
 
 ```text
 Build the app + native Java JAR
   → upload to the Agent domain in Studio Catalog
   → add to the workspace to create an invoker
-  → copy its Extension Base URL and save the app entry in Setup
+  → copy its Extension Base URL and save the environment and app entry in Setup
   → select the invoker in the Studio agent and save the discovered Hosting URL
   → open the agent in the Krista client
 ```
@@ -37,14 +38,14 @@ Select standalone and platform mode explicitly in your build. Use fixture data f
 
 ## Build the extension and host the app
 
-1. Register the extension for the **Agent** domain in the **Krista** ecosystem. Declare a required text Setup attribute for **App URL** and validate that it is an absolute HTTPS URL with a host and a valid port if specified. The minimal Hello extension uses Framework 4 and registers a JAX-RS application for URL discovery. It installed successfully without a placeholder catalog request. Add catalog requests when your extension exposes catalog actions. [Agent domain identifiers](https://github.com/krista-software/extension-development-documentation/blob/main/custom-agents/DomainRegistration.md#ecosystem-and-domain-values) · [Setup attributes](https://github.com/krista-software/extension-development-documentation/blob/main/setup-tab/Attributes.md) · [Sample extension declaration](../src/main/java/app/krista/sample/hello/HelloExtension.java)
-2. Choose where the browser will get the app. For bundled hosting, put the web build in the JAR and map the resource directory with `@StaticResource`. The sample maps `app` to `app` and uses relative asset URLs so its scripts and styles load from a nested invoker path. For a separately hosted UI, use a browser-reachable HTTPS entry point and configure the app host to allow framing by the US Krista client origin, `https://us.krista.app`. If that UI calls the extension across origins, verify the actual request and preflight with your deployment’s allowed origins and headers. Check framing in your target workspace because the browser receives headers from the deployed host and gateway. [Framework 4 static resources](https://github.com/krista-software/extension-development-documentation/blob/main/development/Framework4Features.md#staticresource)
+1. Register the extension for the **Agent** domain in the **Krista** ecosystem. Declare **App URL** in Setup. The Hello sample validates the bundled HTTPS entry against the selected **Deployment Environment**. The minimal Hello extension uses Framework 4 and registers a JAX-RS application for URL discovery. It installed successfully without a placeholder catalog request. Add catalog requests when your extension exposes catalog actions. [Agent domain identifiers](https://github.com/krista-software/extension-development-documentation/blob/main/custom-agents/DomainRegistration.md#ecosystem-and-domain-values) · [Setup attributes](https://github.com/krista-software/extension-development-documentation/blob/main/setup-tab/Attributes.md) · [Sample extension declaration](../src/main/java/app/krista/sample/hello/HelloExtension.java)
+2. Choose where the browser will get the app. For bundled hosting, put the web build in the JAR and map the resource directory with `@StaticResource`. The sample maps `app` to `app` and uses relative asset URLs so its scripts and styles load from a nested invoker path. If you adapt the sample to host your own UI separately, use a browser-reachable HTTPS entry point and configure the app host to allow framing by the US Krista client origin, `https://us.krista.app`. If that UI calls the extension across origins, verify the actual request and preflight with your deployment’s allowed origins and headers. Check framing in your target workspace because the browser receives headers from the deployed host and gateway. [Framework 4 static resources](https://github.com/krista-software/extension-development-documentation/blob/main/development/Framework4Features.md#staticresource)
 3. Build and inspect the JAR. For the Hello sample, run these commands from the checkout root. Check that the JAR contains the extension classes, generated `META-INF/krista/extension.json`, and `app/index.html` with its scripts and styles. The sample uses Krista SDK and annotation processor `1.0.127` by default and requests the platform’s default Framework 4 container base. Use versions supported by your target deployment. [Sample Gradle configuration](../build.gradle) · [Java extension packaging](https://github.com/krista-software/extension-development-documentation/blob/main/getting-started/BuildingAndPackaging.md) · [Framework 4 container configuration](https://github.com/krista-software/extension-development-documentation/blob/main/development/Framework4Features.md#containerize)
 
 ```sh
 (cd ui && npm ci && npm run build:platform)
 ./gradlew jar
-jar tf build/libs/sample-custom-agent-1.0.0.jar
+jar tf build/libs/sample-custom-agent-1.3.0.jar
 ```
 
 ### Implement URL discovery
@@ -56,19 +57,19 @@ HTTP 200 response body:
 ```json
 {
   "payload": {
-    "hostingUrl": "https://apps.example.com/hello/index.html"
+    "hostingUrl": "https://extension.us.krista.app/extension/api/ROUTING_ID/static/app/index.html"
   }
 }
 ```
 
-## Deploy and assign the agent in US production
+## Deploy and assign the agent
 
-Start in [US production Studio](https://studio.us.krista.app/) and select the workspace that will host the agent. You’ll install the JAR and configure the agent in that workspace, then open the same workspace in [the US Krista client](https://us.krista.app/). Copy the invoker route and choose the verification user during deployment.
+Start in [US production Studio](https://studio.us.krista.app/) and select the workspace that will host the agent. You’ll install the JAR and configure the agent in that workspace, then open the same workspace in [the US Krista client](https://us.krista.app/). Copy the invoker route and choose the verification user during deployment. For Solution Labs, start from [Solution Labs Studio](https://studio.solution-labs.eng.krista.app/) and use the same JAR.
 
 1. **Upload the native JAR.** Open Studio for the target workspace. Go to **Catalog → Krista → Agent → Create New Extension**. On the **Native Java Jar** tab, select **Upload**, choose the JAR, and supply a catalog name and description. The **Import Catalog** action accepts `.daz` catalog bundles. Use **Native Java Jar** when following this guide. [Native JAR build and packaging](https://github.com/krista-software/extension-development-documentation/blob/main/getting-started/BuildingAndPackaging.md)
 2. **Install it in the workspace.** Open the new catalog entry and select **Add to Workspace**. Choose **Krista Managed (Internal)** for this walkthrough, then select **Add**. Wait for provisioning. Open the installed invoker under the workspace’s **Extensions → Agents** and confirm it is in **Live** mode.
 3. **Copy the complete routed URL.** In the invoker’s **Details** tab, confirm **Primary Domain** is **Agent**, then copy **Extension Base URL**. It commonly looks like `https://extension.<krista-domain-name>/extension/api/<routing-id>`. Use the full value Studio displays for this invoker, including its host and routing ID. For bundled hosting, append `/static/app/index.html`. Open the resulting entry URL directly in a browser to verify that the page and assets load. The Hello platform build displays its recovery message when opened directly.
-4. **Save the app entry point.** Open the live invoker’s **Setup** tab. Enter the full HTTPS entry URL in **App URL** and select **Save changes**. If you host the app separately, enter its full HTTPS entry URL here. Check discovery using the **Extension Base URL** copied from this workspace. Expect HTTP 200 and the exact app entry in `payload.hostingUrl`. Replace the placeholder below with the copied value.
+4. **Save the deployment settings.** Open the live invoker’s **Setup** tab. Choose **US Production** or **Solution Labs** in **Deployment Environment**. Enter the full bundled HTTPS entry in **App URL** and select **Save changes**. Check discovery using the **Extension Base URL** copied from this workspace. Expect HTTP 200 and the exact app entry in `payload.hostingUrl`. Replace the placeholder below with the copied value.
 
    ```sh
    extension_base='PASTE_EXTENSION_BASE_URL_HERE'
@@ -76,7 +77,14 @@ Start in [US production Studio](https://studio.us.krista.app/) and select the wo
    ```
 
 5. **Create and configure the Studio agent.** Go to **Agents → New Agent**, give the test agent a name, and open it. Under **Agent setup → Agent configuration**, use the invoker picker labeled **Select how the agent is triggered from the dashboard**. Select the invoker you installed. Wait for **Hosting URL** to show the expected app entry and select **Save**. Give the intended test users access through the workspace’s normal configuration.
-6. **Open the agent in the Krista client.** Select **Open Client** in Studio, confirm you are in the same workspace on `us.krista.app`, then open your new agent. Confirm that the iframe document uses the expected app URL and that its scripts and styles load. Check this step from the client as well as opening the URL directly. A page that serves over HTTPS can still be blocked from loading in a frame.
+6. **Open the agent in the Krista client.** Select **Open Client** in Studio, confirm you are in the same workspace on the corresponding client, then open your new agent. Confirm that the iframe document uses the expected app URL and that its scripts and styles load. Check this step from the client as well as opening the URL directly. A page that serves over HTTPS can still be blocked from loading in a frame.
+
+| Setup choice | Client origin | Bundled extension host | IAM introspection |
+| --- | --- | --- | --- |
+| US Production | `https://us.krista.app` | `extension.us.krista.app` | `https://studio.us.krista.app/auth/v1/introspect` |
+| Solution Labs | `https://solution-labs.eng.krista.app` | `extension.solution-labs.eng.krista.app` | `https://studio.solution-labs.eng.krista.app/auth/v1/introspect` |
+
+A v1.2.0 invoker can keep its saved Solution Labs **App URL** during the upgrade. When the environment field is absent, the extension accepts the existing bundled Solution Labs URL. Select **Solution Labs** explicitly when saving Setup in v1.3.0. A US installation needs **US Production** selected.
 
 ### Refresh the app URL or upgrade the JAR
 
@@ -87,7 +95,7 @@ Start in [US production Studio](https://studio.us.krista.app/) and select the wo
 
 Studio discovery and client authentication are separate requests. When the assigned topic opens, the Krista client loads the saved app URL in an iframe and sends launch context with `postMessage`. For US production, validate that the sending window is the parent and its origin is `https://us.krista.app`. Confirm which launch fields and credential the target client supplies. Read only the fields your app needs. Derive the caller’s authority on the server.
 
-Use the platform-supported user authentication path for your workspace. If that deployment supplies a Krista access token and supports IAM introspection for this extension, the normal sample implements the following flow using the verified Solution Labs settings. For US production, confirm the target extension and client origins and the IAM endpoint before adapting the settings in the Angular launch entry and the Java authenticator. [Angular launch entry](../ui/src/main.platform.ts) · [Java authenticator](../src/main/java/app/krista/sample/hello/GreetingAuthenticator.java)
+The same sample JAR supports both entries in the table. The Angular shell checks the immediate parent against the client origin paired with the iframe’s extension origin. The server reads the invoker’s selected environment on each greeting request and uses that environment’s IAM endpoint. The app also sends the checked client origin so an inconsistent Setup fails before introspection. [Angular launch entry](../ui/src/main.platform.ts) · [Java authenticator](../src/main/java/app/krista/sample/hello/GreetingAuthenticator.java)
 
 1. The iframe accepted the client’s access token and sent it in an `Authorization: Bearer …` header to the same invoker’s `GET /rest/greeting` route. The request stayed on the extension origin. Keep the credential in memory for the request, and keep it out of URLs, persistent browser storage, logs, and diagnostics.
 2. The extension’s `RequestAuthenticator` checks the token with the deployment’s trusted Krista IAM introspection endpoint. Confirm the approved endpoint, request and response formats, and reachability from the invoker in US production before sending a launch token. Configure the trusted IAM destination on the server, independently of the launch message.
@@ -107,7 +115,7 @@ Use the platform-supported user authentication path for your workspace. If that 
 
 For the profile demo, v1.2.0 also reads role names and primary email from the bound account. The workspace attribute provider supplies the visible definitions, which the extension matches to that same account’s scalar values. The response carries display labels and values for the current user. [Greeting resource](../src/main/java/app/krista/sample/hello/GreetingResource.java)
 
-The Solution Labs run verified installation, discovery, iframe rendering, and URL refresh. After validating the IAM contract with a separate probe, the normal sample was upgraded in place to v1.1.0. The Krista topic rendered the signed-in Studio admin’s KSDK display name and workspace, including after a fresh client reload. Discovery returned HTTP 200 and the greeting returned HTTP 401 without the launch credential. The non-admin acceptance run and verification in a workspace on the US production domains remain pending. [Verification findings](../docs-specs/sample-agent/findings.md) · [Acceptance scenarios](../docs-specs/sample-agent/test-plan.md)
+The Solution Labs run verified installation, discovery, iframe rendering, and URL refresh. After validating the IAM contract with a separate probe, the normal sample was upgraded in place to v1.1.0. The Krista topic rendered the signed-in Studio admin’s KSDK display name and workspace, including after a fresh client reload. Discovery returned HTTP 200 and the greeting returned HTTP 401 without the launch credential. In v1.3.0, Studio saved **Solution Labs** on the same invoker and the topic displayed the signed-in profile, including roles and the primary email field. The non-admin acceptance run and verification in a workspace on the US production domains remain pending. [Verification findings](../docs-specs/sample-agent/findings.md) · [Acceptance scenarios](../docs-specs/sample-agent/test-plan.md)
 
 ## Troubleshoot by stage
 

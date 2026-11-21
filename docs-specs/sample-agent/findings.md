@@ -111,3 +111,11 @@ The iframe accepted the JWT only from its expected Krista parent and sent it as 
 - Upgraded the existing **Hello Sample Agent** workspace invoker in place. Reopened **Hello Sample Verification** and verified the original greeting and workspace, two workspace role chips, and the primary email field in the current signed-in session. No custom personal attributes appeared for that account.
 - The greeting uses the bound account for role names, primary email, and custom attribute values. It matches custom values to the workspace attribute provider’s visible definitions and displays populated text, numeric, and boolean values.
 - The standalone fixture rendered two role chips and three personal attribute tiles at 300 pixels with no horizontal overflow. The deployed discovery endpoint and bundle returned HTTP 200. A credential-free greeting, including a request that supplied the internal verification header, returned HTTP 401 without profile fields.
+
+### Shared deployment JAR v1.3.0
+
+- The packaged metadata declares a **Deployment Environment** dropdown with **Solution Labs** and **US Production**. The invoker also needs its own bundled **App URL** copied from Studio.
+- A local fixture using the Krista JAX-RS dispatcher exercised both choices in the same JAR. Discovery returned each exact configured URL, rejected mismatched and malformed settings, and continued to recognize a saved Solution Labs URL from before the dropdown was added.
+- Both Studio IAM endpoints accepted the expected JSON envelope and returned an inactive result for a synthetic invalid token. The authenticator rejected that token and rejected a client origin that differed from the invoker setting. No active credential was used in these checks.
+- Upgraded the existing **Hello Sample Agent** invoker in JM Training to v1.3.0 and saved **Solution Labs** under **Deployment Environment**. The saved **App URL** continued to resolve. The deployed HTML and JavaScript matched the packaged v1.3.0 JAR byte-for-byte.
+- After reopening **Hello Sample Verification**, the greeting matched the signed-in user and workspace and showed both workspace roles and the populated primary email field. No custom attribute fields appeared for the signed-in account. A credential-free greeting returned HTTP 401. US production and non-admin launches remain to be verified.

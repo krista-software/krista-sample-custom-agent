@@ -3,6 +3,7 @@ package app.krista.sample.hello;
 import app.krista.extension.authorization.MustAuthenticateException;
 import app.krista.extension.authorization.MustAuthorizeException;
 import app.krista.extension.authorization.RequestAuthenticator;
+import app.krista.extension.executor.Invoker;
 import app.krista.extension.request.ProtoRequest;
 import app.krista.extension.request.ProtoResponse;
 import app.krista.extension.request.protos.http.HttpProtocol;
@@ -26,8 +27,6 @@ import java.util.regex.Pattern;
 
 final class GreetingAuthenticator implements RequestAuthenticator {
 
-    // Use only the IAM endpoint verified for this build's deployment.
-    private static final URI IAM = URI.create("https://studio.solution-labs.eng.krista.app/auth/v1/introspect");
     private static final HttpClient HTTP = HttpClient.newBuilder()
             .followRedirects(HttpClient.Redirect.NEVER)
             .connectTimeout(Duration.ofSeconds(4))
@@ -37,9 +36,11 @@ final class GreetingAuthenticator implements RequestAuthenticator {
     static final String VERIFIED_HEADER = "X-Hello-Verified-Launch";
 
     private final Workspace workspace;
+    private final Invoker invoker;
 
-    GreetingAuthenticator(Workspace workspace) {
+    GreetingAuthenticator(Workspace workspace, Invoker invoker) {
         this.workspace = workspace;
+        this.invoker = invoker;
     }
 
     @Override
@@ -73,7 +74,12 @@ final class GreetingAuthenticator implements RequestAuthenticator {
         }
 
         try {
-            String accountId = resolveAccountId(token);
+            var environment = DeploymentSettings.from(invoker.getAttributes()).environment();
+            // This header catches a stale or mismatched iframe. IAM, not the header, verifies identity.
+            if (!environment.clientOrigin().equals(http.getHeader(DeploymentSettings.CLIENT_ORIGIN_HEADER))) {
+                return null;
+            }
+            String accountId = resolveAccountId(token, environment.iamEndpoint());
             if (accountId != null) {
                 http.getHeaders().put(VERIFIED_HEADER, "true");
             }
@@ -87,8 +93,8 @@ final class GreetingAuthenticator implements RequestAuthenticator {
         }
     }
 
-    private String resolveAccountId(String token) throws IOException, InterruptedException {
-        var request = java.net.http.HttpRequest.newBuilder(IAM)
+    private String resolveAccountId(String token, URI iamEndpoint) throws IOException, InterruptedException {
+        var request = java.net.http.HttpRequest.newBuilder(iamEndpoint)
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/json")
                 .timeout(Duration.ofSeconds(7))

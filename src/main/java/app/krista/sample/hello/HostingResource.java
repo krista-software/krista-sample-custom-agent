@@ -29,7 +29,7 @@ public class HostingResource {
     public Response getHostingUrl() {
         Map<String, Object> attributes = invoker.getAttributes();
         try {
-            String appUrl = HelloExtension.requireAppUrl(attributes);
+            String appUrl = DeploymentSettings.from(attributes).appUrl();
             return Response.ok(JSON.toJson(Map.of("payload", Map.of("hostingUrl", appUrl)))).build();
         } catch (IllegalArgumentException error) {
             return Response.status(Response.Status.SERVICE_UNAVAILABLE)

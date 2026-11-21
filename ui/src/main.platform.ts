@@ -3,9 +3,10 @@ import { bootstrapApplication } from '@angular/platform-browser';
 
 import { GREETING_STATE, Greeting, GreetingState, ProfileAttribute } from './greeting';
 
-// These origins are paired with the verified Solution Labs IAM endpoint in the JAR.
-const parentOrigin = 'https://solution-labs.eng.krista.app';
-const frameOrigin = 'https://extension.solution-labs.eng.krista.app';
+const clientByExtensionOrigin = new Map([
+  ['https://extension.solution-labs.eng.krista.app', 'https://solution-labs.eng.krista.app'],
+  ['https://extension.us.krista.app', 'https://us.krista.app'],
+]);
 
 function isRole(value: unknown): value is string {
   return typeof value === 'string' && value.trim().length > 0;
@@ -22,8 +23,9 @@ bootstrapApplication(Greeting, {
     provide: GREETING_STATE,
     useFactory: () => {
       const state = signal<GreetingState>({ kind: 'unavailable' });
-      if (window.parent === window || location.origin !== frameOrigin ||
-          !/^\/extension\/api\/[^/]+\/static\/app\/index\.html$/.test(location.pathname)) {
+      const parentOrigin = clientByExtensionOrigin.get(location.origin);
+      if (window.parent === window || !parentOrigin ||
+          !/^\/extension\/api\/[A-Za-z0-9_-]+\/static\/app\/index\.html$/.test(location.pathname)) {
         return state.asReadonly();
       }
 
@@ -44,7 +46,10 @@ bootstrapApplication(Greeting, {
         const requestTimeout = window.setTimeout(() => request.abort(), 12_000);
         try {
           const response = await fetch(route, {
-            headers: { Authorization: `Bearer ${data.accessToken}` },
+            headers: {
+              Authorization: `Bearer ${data.accessToken}`,
+              'X-Hello-Client-Origin': parentOrigin,
+            },
             mode: 'same-origin',
             credentials: 'omit',
             redirect: 'error',
