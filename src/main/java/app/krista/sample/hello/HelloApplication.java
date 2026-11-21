@@ -14,6 +14,6 @@ public class HelloApplication extends Application {
 
     @Override
     public Set<Class<?>> getClasses() {
-        return Set.of(HostingResource.class);
+        return Set.of(HostingResource.class, GreetingResource.class);
     }
 }

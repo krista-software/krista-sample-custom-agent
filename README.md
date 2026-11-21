@@ -1,6 +1,6 @@
 # Hello Custom Agent
 
-Hello is a developer sample for building an Angular view and registering a native Java extension under Krista’s **Agent** domain. You can run the greeting locally with sample data or build the platform shell to test Studio URL discovery and open a topic. The identity probe verified the authenticated request path. Integration into the normal sample is pending.
+Hello is a developer sample for building an Angular view and registering a native Java extension under Krista’s **Agent** domain. You can run the greeting locally with sample data or build the platform app to exercise Studio URL discovery and read the signed-in user’s name, workspace, roles, and visible personal attributes from KSDK when the topic opens. The checked-in platform build uses the verified Solution Labs authentication settings.
 
 ## Run the standalone greeting
 
@@ -12,7 +12,7 @@ npm ci
 npm run start:standalone
 ```
 
-Open [http://localhost:4200/](http://localhost:4200/) in a browser. The page shows **Hello, Alex**, **Workspace: Sample Space**, and **Local sample data**. To change the fixture names, edit [the standalone entry point](ui/src/main.standalone.ts). This mode exercises the [shared Angular view](ui/src/greeting.ts) and needs no Krista session or running extension.
+Open [http://localhost:4200/](http://localhost:4200/) in a browser. The page shows **Hello, Alex**, **Workspace: Sample Space**, and **Local sample data**, with example role chips and personal attributes. To change the fixture names, edit [the standalone entry point](ui/src/main.standalone.ts). This mode exercises the [shared Angular view](ui/src/greeting.ts) and needs no Krista session or running extension.
 
 ## Build the platform artifacts
 
@@ -21,7 +21,7 @@ Use JDK 21, the included Gradle 8.13 wrapper, and the Node.js and npm versions a
 ```sh
 (cd ui && npm ci && npm run build:platform)
 ./gradlew jar
-jar tf build/libs/sample-custom-agent-1.0.0.jar
+jar tf build/libs/sample-custom-agent-1.2.0.jar
 ```
 
 Check for the compiled classes under `app/krista/sample/hello/` and generated metadata at `META-INF/krista/extension.json`. Gradle copies the Angular bundle from `ui/dist/platform/browser/` to `app/` in the JAR. The [extension declaration](src/main/java/app/krista/sample/hello/HelloExtension.java) exposes that directory through Framework 4 static resources.
@@ -30,7 +30,7 @@ The build defaults to Krista SDK and annotation processor version `1.0.127`. If 
 
 ## Install and assign in Studio
 
-Sign in to [US production Studio](https://studio.us.krista.app/) and select the workspace where the agent will be installed. Use an installer account that can upload to the catalog, add an invoker, and edit agent settings. Use a dedicated agent and topic for verification. [Custom agent deployment guide](docs/custom-agent-dev-guide.md)
+For a US production deployment, confirm the target client and extension origins and the trusted IAM endpoint and contract before adapting the Solution Labs settings in [the Angular launch entry](ui/src/main.platform.ts) and [the Java authenticator](src/main/java/app/krista/sample/hello/GreetingAuthenticator.java). Build a JAR with the settings for the target environment. Sign in to [US production Studio](https://studio.us.krista.app/) and select the workspace where the agent will be installed. Use an installer account that can upload to the catalog, add an invoker, and edit agent settings. Use a dedicated agent and topic for verification. [Custom agent deployment guide](docs/custom-agent-dev-guide.md)
 
 1. In Studio, open **Catalog → Krista → Agent → Create New Extension**. Under **Native Java Jar**, select **Upload** and provide the JAR, a catalog name, and a description.
 2. Open the resulting catalog entry and choose **Add to Workspace → Krista Managed (Internal) → Add** to create its workspace invoker.
@@ -55,6 +55,6 @@ Studio saves a copy of the discovered URL on the topic when you save the assignm
 
 ## Verify the live greeting
 
-In your target workspace, verify the authenticated request using a regular, non-administrator user session. Read the display name from `AuthorizationContext.getAuthorizedAccount().getPerson().getPersonName()` and the workspace name from `Workspace.getWorkspaceName()`. Use `Workspace.getWorkspaceId()` to identify the workspace during verification. The Solution Labs run verified Studio discovery, iframe rendering, URL refresh, and KSDK identity binding with an admin-session probe. Production verification remains pending. [Test workspace findings](docs-specs/sample-agent/findings.md)
+Open the topic in your target workspace and compare the greeting with the signed-in profile and active workspace. The platform app passes the Krista launch credential to the same invoker’s `GET /rest/greeting`. After Krista binds the authenticated account, the greeting resource reads the display name from `AuthorizationContext.getAuthorizedAccount().getPerson().getPersonName()` and the workspace name from `Workspace.getWorkspaceName()`. It uses `Workspace.getWorkspaceId()` to confirm workspace context. The same account supplies workspace role names and primary email. To display custom text, numeric, and boolean values, the extension matches that account’s values to the definitions visible through the workspace’s KSDK attribute provider. [Test workspace findings](docs-specs/sample-agent/findings.md)
 
 The [acceptance test plan](docs-specs/sample-agent/test-plan.md) covers Studio installation and discovery, a regular user's launch and a credential-free call, topic URL refresh, standalone mode, and missing launch context. Use a separate regular-user session for the live greeting check. Record the actual request route, credential type, and account and workspace match results in the [findings](docs-specs/sample-agent/findings.md).

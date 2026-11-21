@@ -48,20 +48,20 @@ Downstream specification, implementation, test, and review work must use this co
 
 **Status:** Blocked
 
-- TASK-003 built and browser-tested the Angular greeting. ITS-004 standalone passed. ITS-005 direct platform mode and a narrow iframe without context passed locally. The normal sample also framed in the live test topic and showed waiting then recovery. Successful live greeting and recovery after authentication still await TASK-004.
-- TASK-004 depends on proving one installed invocation supplies the regular user's authenticated KSDK context.
+- TASK-003 built and browser-tested the Angular greeting. ITS-004 standalone passed. ITS-005 direct platform mode and a narrow iframe without context passed locally. The normal sample also framed in the live test topic and showed waiting then recovery. The original shell is superseded by v1.1.0.
+- TASK-004 integrated the verified launch and credential flow into the normal sample. Studio upgraded the existing invoker to v1.1.0 in JM Training. The topic displayed the signed-in admin’s KSDK name and workspace, including after reload. Discovery returned HTTP 200, and the credential-free greeting returned HTTP 401 without either greeting field. Regular-user acceptance remains pending.
 - The CTO reviewer confirmed the local greeting and missing-context evidence and rejected phase certification pending the live greeting and topic launch.
 
 ### Phase 3 — Verification and documentation
 
 **Status:** Blocked
 
-- Drafted and checked the sample README, changelog, and findings against the local artifacts. Verified the native upload, managed provisioning, Setup, Studio discovery, probe framing and same-invoker URL refresh in the test workspace. The test topic remains assigned to the normal sample. The authenticated greeting check and final walkthrough remain outstanding.
+- Drafted and checked the sample README, changelog, and findings against the local artifacts. Verified the native upload, managed provisioning, Setup, Studio discovery, probe framing and same-invoker URL refresh in the test workspace. The test topic remains assigned to the normal sample. The normal sample’s admin-session greeting check passed. The regular-user walkthrough remains outstanding.
 - Addressed the reviewer's documentation finding about locating the routed URL. The README now identifies **Details → Extension Base URL** from the Studio source. The URL refresh check passed. The reviewer withheld certification pending the finished live walkthrough and implemented KSDK call sites.
 
 ## Blocked Items
 
-- Full runtime acceptance still requires a non-admin session in JM Training. The approved admin-session probe passed with credential traffic confined to Solution Labs. The regular-user acceptance run and final sample integration remain open.
+- Full runtime acceptance still requires a non-admin session in JM Training. The approved admin-session probe passed with credential traffic confined to Solution Labs. The normal sample integration and admin-session redeployment passed. The regular-user acceptance run remains open.
 
 ## Scope-Creep Observations
 

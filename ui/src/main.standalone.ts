@@ -7,6 +7,12 @@ const state = signal<GreetingState>({
   kind: 'ready',
   displayName: 'Alex',
   workspaceName: 'Sample Space',
+  roles: ['Agent Builder', 'Workspace Member'],
+  attributes: [
+    { label: 'Primary email', value: 'alex@example.com' },
+    { label: 'Department', value: 'Customer Success' },
+    { label: 'Region', value: 'North America' },
+  ],
   sampleData: true,
 });
 
