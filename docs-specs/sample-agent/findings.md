@@ -119,3 +119,9 @@ The iframe accepted the JWT only from its expected Krista parent and sent it as 
 - Both Studio IAM endpoints accepted the expected JSON envelope and returned an inactive result for a synthetic invalid token. The authenticator rejected that token and rejected a client origin that differed from the invoker setting. No active credential was used in these checks.
 - Upgraded the existing **Hello Sample Agent** invoker in JM Training to v1.3.0 and saved **Solution Labs** under **Deployment Environment**. The saved **App URL** continued to resolve. The deployed HTML and JavaScript matched the packaged v1.3.0 JAR byte-for-byte.
 - After reopening **Hello Sample Verification**, the greeting matched the signed-in user and workspace and showed both workspace roles and the populated primary email field. No custom attribute fields appeared for the signed-in account. A credential-free greeting returned HTTP 401. US production and non-admin launches remain to be verified.
+
+### POC deployment v1.4.0
+
+- Installed the same v1.4.0 JAR as a Krista-managed invoker in **Krista Customer Zero**. Studio **Details** reported the `extension.poc.krista.app` origin. Saved **POC** and the bundled **App URL** in Setup.
+- POC Studio build 89 displayed the manually entered App URL but omitted it from the copied attribute object and reported it empty on save. Using the **Attributes → Paste** control to apply both fields saved the configuration. Discovery returned HTTP 200 with the exact bundled entry. The served entry matched the packaged HTML, and a credential-free greeting returned HTTP 401.
+- Assigned the invoker to a dedicated **Hello Sample Verification** agent. Its **Home** topic in the POC client rendered the signed-in account’s KSDK name, **Krista Customer Zero**, 20 workspace roles, and a populated primary email field. No other personal attribute fields appeared for that account. No credential or attribute value was recorded.

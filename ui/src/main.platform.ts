@@ -6,6 +6,7 @@ import { GREETING_STATE, Greeting, GreetingState, ProfileAttribute } from './gre
 const clientByExtensionOrigin = new Map([
   ['https://extension.solution-labs.eng.krista.app', 'https://solution-labs.eng.krista.app'],
   ['https://extension.us.krista.app', 'https://us.krista.app'],
+  ['https://extension.poc.krista.app', 'https://poc.krista.app'],
 ]);
 
 function isRole(value: unknown): value is string {

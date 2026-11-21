@@ -20,13 +20,13 @@ import java.util.Map;
 @Domain(id = HelloExtension.AGENT_DOMAIN_ID, name = "Agent",
         ecosystemId = "catEntryEcosystem_d3b05047-07b0-4b06-95a3-9fb8f7f608d9",
         ecosystemName = "Krista", ecosystemVersion = "9bc82a31-a79a-4dc8-bdbd-1ed7e576f7c1")
-@Extension(name = "Hello", description = "Sample custom agent", version = "1.3.0",
+@Extension(name = "Hello", description = "Sample custom agent", version = "1.4.0",
         implementingDomainIds = HelloExtension.AGENT_DOMAIN_ID, supportingModes = ExecutionMode.LIVE,
         implementationModel = Extension.ImplementationModel.Krista_4_O)
 @Containerize
 @StaticResource(path = "app", file = "app")
 @Field.PickOne(value = DeploymentSettings.ENVIRONMENT, required = true,
-        values = {DeploymentSettings.SOLUTION_LABS, DeploymentSettings.US_PRODUCTION},
+        values = {DeploymentSettings.SOLUTION_LABS, DeploymentSettings.US_PRODUCTION, DeploymentSettings.POC},
         description = "Select the Krista environment for this workspace.")
 @Field.Text(value = DeploymentSettings.APP_URL, required = true,
         description = "Copy the invoker's Extension Base URL and append /static/app/index.html.")

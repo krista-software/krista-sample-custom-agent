@@ -45,7 +45,7 @@ Select standalone and platform mode explicitly in your build. Use fixture data f
 ```sh
 (cd ui && npm ci && npm run build:platform)
 ./gradlew jar
-jar tf build/libs/sample-custom-agent-1.3.0.jar
+jar tf build/libs/sample-custom-agent-1.4.0.jar
 ```
 
 ### Implement URL discovery
@@ -64,12 +64,12 @@ HTTP 200 response body:
 
 ## Deploy and assign the agent
 
-Start in [US production Studio](https://studio.us.krista.app/) and select the workspace that will host the agent. You’ll install the JAR and configure the agent in that workspace, then open the same workspace in [the US Krista client](https://us.krista.app/). Copy the invoker route and choose the verification user during deployment. For Solution Labs, start from [Solution Labs Studio](https://studio.solution-labs.eng.krista.app/) and use the same JAR.
+Start in [US production Studio](https://studio.us.krista.app/) and select the workspace that will host the agent. You’ll install the JAR and configure the agent in that workspace, then open the same workspace in [the US Krista client](https://us.krista.app/). Copy the invoker route and choose the verification user during deployment. For Solution Labs or POC, use the same JAR and start from the corresponding Studio. [Solution Labs Studio](https://studio.solution-labs.eng.krista.app/) · [POC Studio](https://studio.poc.krista.app/)
 
 1. **Upload the native JAR.** Open Studio for the target workspace. Go to **Catalog → Krista → Agent → Create New Extension**. On the **Native Java Jar** tab, select **Upload**, choose the JAR, and supply a catalog name and description. The **Import Catalog** action accepts `.daz` catalog bundles. Use **Native Java Jar** when following this guide. [Native JAR build and packaging](https://github.com/krista-software/extension-development-documentation/blob/main/getting-started/BuildingAndPackaging.md)
 2. **Install it in the workspace.** Open the new catalog entry and select **Add to Workspace**. Choose **Krista Managed (Internal)** for this walkthrough, then select **Add**. Wait for provisioning. Open the installed invoker under the workspace’s **Extensions → Agents** and confirm it is in **Live** mode.
 3. **Copy the complete routed URL.** In the invoker’s **Details** tab, confirm **Primary Domain** is **Agent**, then copy **Extension Base URL**. It commonly looks like `https://extension.<krista-domain-name>/extension/api/<routing-id>`. Use the full value Studio displays for this invoker, including its host and routing ID. For bundled hosting, append `/static/app/index.html`. Open the resulting entry URL directly in a browser to verify that the page and assets load. The Hello platform build displays its recovery message when opened directly.
-4. **Save the deployment settings.** Open the live invoker’s **Setup** tab. Choose **US Production** or **Solution Labs** in **Deployment Environment**. Enter the full bundled HTTPS entry in **App URL** and select **Save changes**. Check discovery using the **Extension Base URL** copied from this workspace. Expect HTTP 200 and the exact app entry in `payload.hostingUrl`. Replace the placeholder below with the copied value.
+4. **Save the deployment settings.** Open the live invoker’s **Setup** tab. Choose **US Production**, **Solution Labs**, or **POC** in **Deployment Environment**. Enter the full bundled HTTPS entry in **App URL** and select **Save changes**. Check discovery using the **Extension Base URL** copied from this workspace. Expect HTTP 200 and the exact app entry in `payload.hostingUrl`. Replace the placeholder below with the copied value.
 
    ```sh
    extension_base='PASTE_EXTENSION_BASE_URL_HERE'
@@ -83,8 +83,9 @@ Start in [US production Studio](https://studio.us.krista.app/) and select the wo
 | --- | --- | --- | --- |
 | US Production | `https://us.krista.app` | `extension.us.krista.app` | `https://studio.us.krista.app/auth/v1/introspect` |
 | Solution Labs | `https://solution-labs.eng.krista.app` | `extension.solution-labs.eng.krista.app` | `https://studio.solution-labs.eng.krista.app/auth/v1/introspect` |
+| POC | `https://poc.krista.app` | `extension.poc.krista.app` | `https://studio.poc.krista.app/auth/v1/introspect` |
 
-A v1.2.0 invoker can keep its saved Solution Labs **App URL** during the upgrade. When the environment field is absent, the extension accepts the existing bundled Solution Labs URL. Select **Solution Labs** explicitly when saving Setup in v1.3.0. A US installation needs **US Production** selected.
+A v1.2.0 invoker can keep its saved Solution Labs **App URL** during the upgrade. When the environment field is absent, the extension accepts the existing bundled Solution Labs URL. Select **Solution Labs** explicitly when saving Setup. Select **US Production** for US deployments and **POC** for POC deployments.
 
 ### Refresh the app URL or upgrade the JAR
 
@@ -95,7 +96,7 @@ A v1.2.0 invoker can keep its saved Solution Labs **App URL** during the upgrade
 
 Studio discovery and client authentication are separate requests. When the assigned topic opens, the Krista client loads the saved app URL in an iframe and sends launch context with `postMessage`. For US production, validate that the sending window is the parent and its origin is `https://us.krista.app`. Confirm which launch fields and credential the target client supplies. Read only the fields your app needs. Derive the caller’s authority on the server.
 
-The same sample JAR supports both entries in the table. The Angular shell checks the immediate parent against the client origin paired with the iframe’s extension origin. The server reads the invoker’s selected environment on each greeting request and uses that environment’s IAM endpoint. The app also sends the checked client origin so an inconsistent Setup fails before introspection. [Angular launch entry](../ui/src/main.platform.ts) · [Java authenticator](../src/main/java/app/krista/sample/hello/GreetingAuthenticator.java)
+The same sample JAR supports all three environments in the table. The Angular shell checks the immediate parent against the client origin paired with the iframe’s extension origin. The server reads the invoker’s selected environment on each greeting request and uses that environment’s IAM endpoint. The app also sends the checked client origin so an inconsistent Setup fails before introspection. [Angular launch entry](../ui/src/main.platform.ts) · [Java authenticator](../src/main/java/app/krista/sample/hello/GreetingAuthenticator.java)
 
 1. The iframe accepted the client’s access token and sent it in an `Authorization: Bearer …` header to the same invoker’s `GET /rest/greeting` route. The request stayed on the extension origin. Keep the credential in memory for the request, and keep it out of URLs, persistent browser storage, logs, and diagnostics.
 2. The extension’s `RequestAuthenticator` checks the token with the deployment’s trusted Krista IAM introspection endpoint. Confirm the approved endpoint, request and response formats, and reachability from the invoker in US production before sending a launch token. Configure the trusted IAM destination on the server, independently of the launch message.
@@ -122,6 +123,7 @@ The Solution Labs run verified installation, discovery, iframe rendering, and UR
 | Symptom | What to check |
 | --- | --- |
 | Invoker is missing from the agent picker | Confirm the JAR was added to this workspace, **Primary Domain** is **Agent**, and the intended invoker is available in **Live** mode. Refresh Studio if it was open while you installed the extension from another tab. |
+| Setup reports **App URL should not be empty** after entry | Use **Copy** beside **Attributes** to check whether Studio captured the value. If the URL is absent, copy a JSON object containing `"Deployment Environment"` and `"App URL"` with the intended values, use the **Paste** control beside **Attributes**, then select **Save changes**. This worked on POC Studio build 89. |
 | **Hosting URL** stays blank | Check the saved **App URL** and request `/rest/hostUrl` from the routed **Extension Base URL**. A 404 points first to the route or JAX-RS registration. A sample 503 points to missing or invalid Setup. Confirm the response uses `payload.hostingUrl`. |
 | Client opens the old app URL | Reopen Studio to verify Setup, then clear and reselect the same invoker in the agent form before saving once. Check the iframe URL after reloading. |
 | Direct open works but the iframe is blank | Check browser network and console for the iframe document and its assets. Inspect the framing policy, HTTPS reachability, JavaScript MIME types and relative asset paths. |

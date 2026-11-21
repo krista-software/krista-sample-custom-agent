@@ -11,6 +11,7 @@ record DeploymentSettings(String appUrl, Environment environment) {
     static final String ENVIRONMENT = "Deployment Environment";
     static final String SOLUTION_LABS = "Solution Labs";
     static final String US_PRODUCTION = "US Production";
+    static final String POC = "POC";
     static final String CLIENT_ORIGIN_HEADER = "X-Hello-Client-Origin";
 
     private static final Pattern APP_PATH =
@@ -24,8 +25,10 @@ record DeploymentSettings(String appUrl, Environment environment) {
             environment = Environment.LABS;
         } else if (US_PRODUCTION.equals(choice)) {
             environment = Environment.PRODUCTION;
+        } else if (POC.equals(choice)) {
+            environment = Environment.POC;
         } else {
-            throw new IllegalArgumentException("Select Solution Labs or US Production in Setup.");
+            throw new IllegalArgumentException("Select Solution Labs, US Production, or POC in Setup.");
         }
 
         if (!(attributes.get(APP_URL) instanceof String appUrl) || appUrl.isBlank()) {
@@ -49,7 +52,8 @@ record DeploymentSettings(String appUrl, Environment environment) {
 
     enum Environment {
         LABS("solution-labs.eng.krista.app"),
-        PRODUCTION("us.krista.app");
+        PRODUCTION("us.krista.app"),
+        POC("poc.krista.app");
 
         private final String clientHost;
 

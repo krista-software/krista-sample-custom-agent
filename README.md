@@ -1,6 +1,6 @@
 # Hello Custom Agent
 
-Hello is a developer sample for building an Angular view and registering a native Java extension under Krista’s **Agent** domain. You can run the greeting locally with sample data or build the platform app to exercise Studio URL discovery and read the signed-in user’s name, workspace, roles, and visible personal attributes from KSDK when the topic opens. One platform JAR supports US production and Solution Labs. Configure each invoker in Studio.
+Hello is a developer sample for building an Angular view and registering a native Java extension under Krista’s **Agent** domain. You can run the greeting locally with sample data or build the platform app to exercise Studio URL discovery and read the signed-in user’s name, workspace, roles, and visible personal attributes from KSDK when the topic opens. One platform JAR supports US production, Solution Labs, and POC. Configure each invoker in Studio.
 
 ## Run the standalone greeting
 
@@ -21,7 +21,7 @@ Use JDK 21, the included Gradle 8.13 wrapper, and the Node.js and npm versions a
 ```sh
 (cd ui && npm ci && npm run build:platform)
 ./gradlew jar
-jar tf build/libs/sample-custom-agent-1.3.0.jar
+jar tf build/libs/sample-custom-agent-1.4.0.jar
 ```
 
 Check for the compiled classes under `app/krista/sample/hello/` and generated metadata at `META-INF/krista/extension.json`. Gradle copies the Angular bundle from `ui/dist/platform/browser/` to `app/` in the JAR. The [extension declaration](src/main/java/app/krista/sample/hello/HelloExtension.java) exposes that directory through Framework 4 static resources.
@@ -30,12 +30,12 @@ The build defaults to Krista SDK and annotation processor version `1.0.127`. If 
 
 ## Install and assign in Studio
 
-Sign in to [US production Studio](https://studio.us.krista.app/) or [Solution Labs Studio](https://studio.solution-labs.eng.krista.app/) and select the workspace where the agent will be installed. Use an installer account that can upload to the catalog, add an invoker, and edit agent settings. Use a dedicated agent and topic for verification. [Custom agent deployment guide](docs/custom-agent-dev-guide.md)
+Sign in to [US production Studio](https://studio.us.krista.app/), [Solution Labs Studio](https://studio.solution-labs.eng.krista.app/), or [POC Studio](https://studio.poc.krista.app/) and select the workspace where the agent will be installed. Use an installer account that can upload to the catalog, add an invoker, and edit agent settings. Use a dedicated agent and topic for verification. [Custom agent deployment guide](docs/custom-agent-dev-guide.md)
 
 1. In Studio, open **Catalog → Krista → Agent → Create New Extension**. Under **Native Java Jar**, select **Upload** and provide the JAR, a catalog name, and a description.
 2. Open the resulting catalog entry and choose **Add to Workspace → Krista Managed (Internal) → Add** to create its workspace invoker.
 3. Open the live invoker's **Details** tab and copy its **Extension Base URL**. Append `/static/app/index.html` to form the bundled HTTPS entry. Open it directly to check that the sample displays **Open this agent from its Krista topic.**
-4. Open the invoker's **Setup** tab. Set **Deployment Environment** to **US Production** or **Solution Labs**, then paste that invoker’s bundled HTTPS entry into **App URL** and save. Studio uses the selected environment to validate the extension host. The same JAR is used for either choice.
+4. Open the invoker's **Setup** tab. Set **Deployment Environment** to **US Production**, **Solution Labs**, or **POC**, then paste that invoker’s bundled HTTPS entry into **App URL** and save. Studio uses the selected environment to validate the extension host. All three choices use the same JAR.
 5. Open the test agent's **Agent setup → Agent configuration**. In the picker labeled **Select how the agent is triggered from the dashboard**, select the Hello invoker. Wait for **Hosting URL** to show the discovered entry, then save.
 6. Select **Open Client** in Studio to continue in the same workspace on the corresponding Krista client. Open the assigned topic and verify that its iframe loads the configured HTTPS entry.
 
