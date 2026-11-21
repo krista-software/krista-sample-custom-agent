@@ -1,0 +1,46 @@
+plugins {
+    id 'java'
+}
+
+group = 'app.krista.sample'
+version = '1.0.0'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+repositories {
+    maven { url = uri('https://packages.cicd.in.antbrains.com/artifactory/libs-release') }
+    mavenCentral()
+}
+
+def kristaApiVersion = providers.gradleProperty('kristaApiVersion').getOrElse('1.0.127')
+
+dependencies {
+    // The Framework 4 runtime supplies the SDK and REST APIs.
+    compileOnly "app.krista:krista-apis:${kristaApiVersion}"
+    compileOnly 'org.glassfish.hk2:hk2-api:2.6.1'
+    annotationProcessor "app.krista:extension-impl-anno-processors:${kristaApiVersion}"
+    implementation 'com.google.code.gson:gson:2.12.1'
+}
+
+def platformApp = layout.projectDirectory.dir('ui/dist/platform/browser')
+
+processResources {
+    from(platformApp) {
+        into 'app'
+    }
+}
+
+jar {
+    doFirst {
+        if (!platformApp.file('index.html').asFile.isFile()) {
+            throw new GradleException('Build the platform app first with npm run build:platform in ui/.')
+        }
+    }
+    from { configurations.runtimeClasspath.collect { zipTree(it) } }
+    exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}

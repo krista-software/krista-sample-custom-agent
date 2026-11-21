@@ -1,0 +1,7 @@
+/.gradle/
+/.idea/
+/build/
+/docs-specs/*/.pipeline/
+/docs-specs/*/pipeline-status.md
+/docs-specs/*/pipeline.gate
+/docs-specs/*/pipeline.gate.json

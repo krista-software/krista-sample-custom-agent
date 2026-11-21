@@ -1,0 +1,49 @@
+{
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "version": 1,
+  "cli": {
+    "analytics": false,
+    "cache": { "enabled": false }
+  },
+  "projects": {
+    "hello": {
+      "projectType": "application",
+      "root": "",
+      "sourceRoot": "src",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "browser": "src/main.platform.ts",
+            "index": "src/index.html",
+            "tsConfig": "tsconfig.json",
+            "styles": ["src/styles.css"]
+          },
+          "configurations": {
+            "platform": {
+              "baseHref": "./",
+              "outputHashing": "all",
+              "outputPath": "dist/platform"
+            },
+            "standalone": {
+              "browser": "src/main.standalone.ts",
+              "optimization": false,
+              "sourceMap": true,
+              "outputPath": "dist/standalone"
+            }
+          },
+          "defaultConfiguration": "platform"
+        },
+        "serve": {
+          "builder": "@angular/build:dev-server",
+          "options": { "prebundle": false },
+          "configurations": {
+            "platform": { "buildTarget": "hello:build:platform" },
+            "standalone": { "buildTarget": "hello:build:standalone" }
+          },
+          "defaultConfiguration": "platform"
+        }
+      }
+    }
+  }
+}
